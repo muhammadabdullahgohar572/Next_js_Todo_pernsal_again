@@ -76,7 +76,7 @@ const Navbar = () => {
                     Show Tasks
                   </Link>
                   <Link
-                    href="#"
+                    href="../pages/add_Task"
                     className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                   >
                     <FontAwesomeIcon icon={faPlus} className="mr-2" />
@@ -146,7 +146,7 @@ const Navbar = () => {
             Show Tasks
           </Link>
           <Link
-            href="#"
+            href="../pages/add_Task"
             className="block pl-3 pr-4 py-2 text-base font-medium text-white hover:bg-blue-600"
           >
             <FontAwesomeIcon icon={faPlus} className="mr-2" />
