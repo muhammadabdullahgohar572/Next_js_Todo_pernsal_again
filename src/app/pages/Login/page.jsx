@@ -8,10 +8,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Login } from "@/app/services/Add_user";
+import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formsData, setformsData] = useState({
+    email: "",
+    password: "",
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -21,15 +27,43 @@ const LoginPage = () => {
     setError("");
 
     try {
-      // Add your login logic here
-      console.log("Logging in with:", { email, password });
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Validate inputs (better implementation)
+      if (!formsData.email.trim() || !formsData.password.trim()) {
+        setLoading(false);
+        return toast.error("Please fill all required fields");
+      }
 
-      // On successful login, you would typically redirect
-      // router.push('/dashboard');
+      const response = await Login(formsData);
+
+      // Check for successful login (typically status 200)
+      if (response) {
+        toast.success("Login successful!");
+        // Correct redirect syntax
+        window.location.href = "/";
+      } else {
+        // Handle API-specific error messages
+        const errorMsg = response?.data?.message || "Login failed";
+        setError(errorMsg);
+        toast.error(errorMsg);
+      }
     } catch (err) {
-      setError("Invalid email or password");
+      console.error("Login error:", err);
+      // Handle different error cases
+      if (err.response) {
+        if (err.response.status === 401) {
+          setError("Invalid email or password");
+          toast.error("Invalid email or password");
+        } else if (err.response.status === 400) {
+          setError("Bad request - please check your inputs");
+          toast.error("Invalid request format");
+        } else {
+          setError("Login failed - please try again");
+          toast.error("Server error occurred");
+        }
+      } else {
+        setError("Network error - please check your connection");
+        toast.error("Could not connect to server");
+      }
     } finally {
       setLoading(false);
     }
@@ -107,8 +141,10 @@ const LoginPage = () => {
                   type="email"
                   autoComplete="email"
                   required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  value={formsData.email}
+                  onChange={(e) =>
+                    setformsData({ ...formsData, email: e.target.value })
+                  }
                   className="py-2 pl-10 block w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="you@example.com"
                 />
@@ -135,8 +171,10 @@ const LoginPage = () => {
                   type="password"
                   autoComplete="current-password"
                   required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={formsData.password}
+                  onChange={(e) =>
+                    setformsData({ ...formsData, password: e.target.value })
+                  }
                   className="py-2 pl-10 block w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="••••••••"
                 />
@@ -144,21 +182,6 @@ const LoginPage = () => {
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                />
-                <label
-                  htmlFor="remember-me"
-                  className="ml-2 block text-sm text-gray-900"
-                >
-                  Remember me
-                </label>
-              </div>
-
               <div className="text-sm">
                 <Link
                   href="/forgot-password"

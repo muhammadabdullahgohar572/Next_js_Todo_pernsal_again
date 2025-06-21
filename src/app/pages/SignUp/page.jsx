@@ -1,6 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer, toast } from "react-toastify";
 import {
   faUser,
   faEnvelope,
@@ -10,19 +12,57 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Signup } from "@/app/services/Add_user";
 
 const SignUpPage = () => {
   const [formsData, setformsData] = useState({
-    email,
-    name,
-    password,
-    Confirm_Password,
-    about,
-    Profileurl,
+    email: "",
+    name: "",
+    password: "",
+    Confirm_Password: "",
+    about: "",
+    Profileurl: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    // Validation
+    if (!formsData.name || !formsData.email || !formsData.password) {
+      setLoading(false);
+      return toast.error("Please fill all required fields");
+    }
+
+    if (!formsData.email.trim()) {
+      setLoading(false);
+      return toast.error("Please enter a valid email");
+    }
+
+    if (formsData.password !== formsData.Confirm_Password) {
+      setLoading(false);
+      return toast.error("Passwords do not match");
+    }
+
+    try {
+      const response = await Signup(formsData);
+
+      if (response?._id) {  
+        toast.success("Sign up successful!");
+        window.location.href = "/";
+      } else {
+        toast.error(response?.message || "Sign up failed");
+      }
+    } catch (err) {
+      console.log(err)
+      toast.error(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen pt-16 bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <motion.div
@@ -74,7 +114,7 @@ const SignUpPage = () => {
             </div>
           )}
 
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label
                 htmlFor="name"
@@ -95,6 +135,9 @@ const SignUpPage = () => {
                   type="text"
                   autoComplete="name"
                   value={formsData.name}
+                  onChange={(e) =>
+                    setformsData({ ...formsData, name: e.target.value })
+                  }
                   required
                   className="py-2 pl-10 block w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="John Doe"
@@ -122,6 +165,9 @@ const SignUpPage = () => {
                   type="email"
                   autoComplete="email"
                   value={formsData.email}
+                  onChange={(e) =>
+                    setformsData({ ...formsData, email: e.target.value })
+                  }
                   required
                   className="py-2 pl-10 block w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="you@example.com"
@@ -148,6 +194,9 @@ const SignUpPage = () => {
                   id="about"
                   name="about"
                   value={formsData.about}
+                  onChange={(e) =>
+                    setformsData({ ...formsData, about: e.target.value })
+                  }
                   rows={3}
                   className="py-2 pl-10 block w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Your interests, profession, or how you'll use TaskMaster"
@@ -178,6 +227,9 @@ const SignUpPage = () => {
                   type="password"
                   autoComplete="new-password"
                   value={formsData.password}
+                  onChange={(e) =>
+                    setformsData({ ...formsData, password: e.target.value })
+                  }
                   required
                   className="py-2 pl-10 block w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="••••••••"
@@ -205,6 +257,12 @@ const SignUpPage = () => {
                   type="password"
                   autoComplete="new-password"
                   value={formsData.Confirm_Password}
+                  onChange={(e) =>
+                    setformsData({
+                      ...formsData,
+                      Confirm_Password: e.target.value,
+                    })
+                  }
                   required
                   className="py-2 pl-10 block w-full border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                   placeholder="••••••••"
